@@ -14,7 +14,8 @@ export default defineSchema({
   chats: defineTable({
     name: v.string(),
     users: v.array(v.id("users")),
-    lastMessageId: v.optional(v.id("messages")),
+    isGroupchat: v.boolean(),
+    lastMessageAt: v.optional(v.number()),
     lastMessageText: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_users", ["users"]),

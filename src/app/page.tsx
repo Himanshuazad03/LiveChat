@@ -5,10 +5,10 @@ export default function Home() {
   return (
     <div className="flex items-center justify-center h-screen bg-slate-200">
       <SignedOut>
-        <RedirectToSignIn />
+        <RedirectToSignIn/>
       </SignedOut>
       <SignedIn>
-        <SignIn forceRedirectUrl="/chats" />
+        <SignIn afterSignInUrl= "/chats"/>
       </SignedIn>
     </div>
   );

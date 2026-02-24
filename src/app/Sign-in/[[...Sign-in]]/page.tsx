@@ -4,7 +4,7 @@ import React from "react";
 function Page() {
   return (
     <div className="flex items-center justify-center h-screen bg-slate-200">
-      <SignIn/>
+      <SignIn afterSignInUrl= "/chats"/>
     </div>
   );
 }
