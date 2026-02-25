@@ -167,7 +167,7 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
                   <MessageBubble
                     isOwn={message.senderId === currentUser?._id}
                     message={message}
-                    isGroupChat={getChat?.isGroupchat}
+                    isGroupChat={getChat?.isGroupchat ?? false}
                     time={formatTime(message.createdAt)}
                   />
                 </React.Fragment>

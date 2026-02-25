@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const SkeletonBubble = ({ isOwn }: { isOwn: boolean }) => {
   return (
