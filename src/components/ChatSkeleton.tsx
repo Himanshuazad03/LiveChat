@@ -2,9 +2,9 @@ import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ChatSkeleton = () => {
-  const num: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const num: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
   return (
-    <div className="pt-5 space-y-4">
+    <div className="pt-5 space-y-7">
       {num.map((item: number) => (
         <div key={item} className="flex items-center gap-4">
           <Skeleton className="h-12 w-12 rounded-full" />

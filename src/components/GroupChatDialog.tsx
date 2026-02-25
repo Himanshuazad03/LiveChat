@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
@@ -53,6 +52,7 @@ export default function CreateGroupDialog({ children }: Props) {
   const removeUser = (userId: Id<"users">) => {
     setSelectedUsers((prev) => prev.filter((id) => id !== userId));
   };
+  console.log(selectedUsers);
 
   const handleCreate = async () => {
     if (!groupName.trim() || selectedUsers.length === 0) return;
@@ -120,13 +120,19 @@ export default function CreateGroupDialog({ children }: Props) {
             {selectedUsers.map((id) => {
               const user = users?.find((u) => u._id === id);
               return (
-                <Badge key={id} className="flex items-center gap-2 px-3 py-1">
+                <Button
+                  key={id}
+                  variant="default"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeUser(id);
+                  }}
+                  className="ml-1 flex gap-1 items-center text-sm rounded-full"
+                >
                   {user?.name}
-                  <X
-                    className="w-3 h-3 cursor-pointer"
-                    onClick={() => removeUser(id)}
-                  />
-                </Badge>
+                  <X className="h-3 w-3" />
+                </Button>
               );
             })}
           </div>
@@ -139,7 +145,6 @@ export default function CreateGroupDialog({ children }: Props) {
           className="mt-4"
         />
 
-        {/* Users List */}
         <ScrollArea className="h-60 mt-3 pr-4">
           <div className="space-y-2">
             {filteredUsers?.map((user) => {

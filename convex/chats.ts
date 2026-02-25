@@ -56,9 +56,11 @@ export const getAllChats = query({
 
     const chatsWithUsers = await Promise.all(
       filtered.map(async (chat) => {
-        const otherUserId = chat.users.find((id) => id !== currentUser._id);
+        const otherUserIds = chat.users.filter((id) => id !== currentUser._id);
 
-        const otherUser = otherUserId ? await ctx.db.get(otherUserId) : null;
+        const otherUsers = await Promise.all(
+          otherUserIds.map((id) => ctx.db.get(id)),
+        );
         const unreadMessages = await ctx.db
           .query("messages")
           .withIndex("by_chatId", (q) => q.eq("chatId", chat._id))
@@ -70,7 +72,6 @@ export const getAllChats = query({
           )
           .collect();
 
-        
         return {
           _id: chat._id,
           name: chat.name,
@@ -80,12 +81,10 @@ export const getAllChats = query({
           lastMessageText: chat.lastMessageText,
           lastMessageAt: chat.lastMessageAt,
           unreadMessagesCount: unreadMessages.length,
-          otherUser,
-          
+          otherUsers,
         };
       }),
     );
-
     return chatsWithUsers;
   },
 });
@@ -107,7 +106,6 @@ export const getChat = query({
   },
 });
 
-
 export const createGroupChat = mutation({
   args: {
     name: v.string(),
@@ -120,9 +118,7 @@ export const createGroupChat = mutation({
 
     const currentUser = await ctx.db
       .query("users")
-      .withIndex("by_clerkId", (q) =>
-        q.eq("clerkId", identity.subject)
-      )
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .first();
 
     if (!currentUser) throw new Error("User not found");

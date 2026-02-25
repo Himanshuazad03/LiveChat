@@ -18,9 +18,14 @@ import { ArrowLeft } from "lucide-react";
 import { formatTime } from "@/lib/utils";
 import DateDivider from "@/components/Divider";
 import { getDateLabel } from "@/lib/utils";
+import { useUser } from "@clerk/nextjs";
+import { Skeleton } from "@/components/ui/skeleton";
+import MessageSkeleton from "@/components/MessageSkeleton";
 
 const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
   const [message, setMessage] = useState("");
+
+  const { isLoaded } = useUser();
 
   const currentUser = useCurrentUser();
   const currentUserId = currentUser?._id;
@@ -95,19 +100,31 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
             <AvatarImage
               src={getChat?.isGroupchat ? getChat?.image : otherUser?.image}
             />
-            <AvatarFallback>{otherUser?.name.slice(0, 1)}</AvatarFallback>
+            <AvatarFallback>
+              {getChat?.isGroupchat
+                ? getChat?.name.slice(0, 1)
+                : otherUser?.name.slice(0, 1)}
+            </AvatarFallback>
           </Avatar>
-
-          <div className="leading-tight">
-            <p className="font-semibold">
-              {getChat?.isGroupchat ? getChat?.name : otherUser?.name}
-            </p>
-          </div>
+          {!isLoaded || !getChat ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-62.5" />
+              <Skeleton className="h-4 w-50" />
+            </div>
+          ) : (
+            <div className="leading-tight">
+              <p className="font-semibold">
+                {getChat?.isGroupchat ? getChat?.name : otherUser?.name}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       <ScrollArea className="flex-1 px-6 overflow-y-auto">
-        {messages?.length === 0 ? (
+        {!isLoaded || !messages ? (
+          <MessageSkeleton />
+        ) : messages?.length === 0 ? (
           <div className="min-h-full flex items-center justify-center mt-20">
             <div className="flex flex-col items-center text-center px-6">
               <div className="relative flex items-center justify-center">
