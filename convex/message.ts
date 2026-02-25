@@ -148,14 +148,30 @@ export const getTyping = query({
     chatId: v.id("chats"),
   },
   handler: async (ctx, args) => {
-    const fiveSecondsAgo = Date.now() - 3000;
+    const threeSecondsAgo = Date.now() - 3000;
 
     const typingUsers = await ctx.db
       .query("typing")
       .withIndex("by_chatId", (q) => q.eq("chatId", args.chatId))
       .collect();
 
-    return typingUsers.filter((t) => t.updatedAt > fiveSecondsAgo);
+    const activeTyping = typingUsers.filter(
+      (t) => t.updatedAt > threeSecondsAgo,
+    );
+
+    const results = await Promise.all(
+      activeTyping.map(async (typing) => {
+        const user = await ctx.db.get(typing.userId);
+
+        return {
+          userId: typing.userId,
+          name: user?.name,
+          image: user?.image,
+        };
+      }),
+    );
+
+    return results;
   },
 });
 

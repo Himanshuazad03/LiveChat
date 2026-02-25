@@ -181,7 +181,18 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
         {typingUsers &&
           typingUsers?.some((t) => t.userId !== currentUserId) && (
             <div className="flex items-center gap-1.5 px-6 py-1">
-              <span className="text-sm text-muted-foreground">Typing</span>
+              <span className="text-sm text-muted-foreground">
+                {getChat?.isGroupchat
+                  ? typingUsers &&
+                    typingUsers.length > 0 && (
+                      <span>
+                        {typingUsers.length === 1
+                          ? `${typingUsers[0].name} is typing`
+                          : `${typingUsers.map((u) => u.name).join(", ")} are typing...`}
+                      </span>
+                    )
+                  : "typing"}
+              </span>
               <div className="flex gap-1">
                 <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce" />
                 <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce delay-150" />
