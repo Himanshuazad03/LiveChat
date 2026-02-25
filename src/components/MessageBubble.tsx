@@ -28,7 +28,7 @@ const MessageBubble = ({
 }) => {
   return (
     <div
-      className={`flex items-end gap-2 ${isOwn ? "justify-end" : "justify-start"}`}
+      className={`flex items-end gap-2 ${isOwn ? "justify-end" : "justify-start"} animate-message`}
     >
       {!isOwn && isGroupChat && (
         <Avatar className="h-8 w-8">

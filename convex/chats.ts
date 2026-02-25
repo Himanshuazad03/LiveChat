@@ -59,14 +59,27 @@ export const getAllChats = query({
         const otherUserId = chat.users.find((id) => id !== currentUser._id);
 
         const otherUser = otherUserId ? await ctx.db.get(otherUserId) : null;
+        const unreadMessages = await ctx.db
+          .query("messages")
+          .withIndex("by_chatId", (q) => q.eq("chatId", chat._id))
+          .filter((q) =>
+            q.and(
+              q.eq(q.field("isRead"), false),
+              q.neq(q.field("senderId"), currentUser._id),
+            ),
+          )
+          .collect();
 
+        
         return {
           _id: chat._id,
           createdAt: chat.createdAt,
           isGroupchat: chat.isGroupchat,
           lastMessageText: chat.lastMessageText,
           lastMessageAt: chat.lastMessageAt,
+          unreadMessagesCount: unreadMessages.length,
           otherUser,
+          
         };
       }),
     );
@@ -91,4 +104,3 @@ export const getChat = query({
     };
   },
 });
-

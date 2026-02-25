@@ -67,10 +67,15 @@ const SideBar = () => {
           <ChatSkeleton />
         ) : (
           <div className="p-2 space-y-1">
+            {Allchats?.length === 0 && (
+              <div className="text-center text-muted-foreground mt-10">
+                No chats yet. Start a conversation!
+              </div>
+            )}
             {Allchats?.map((chat) => (
               <div
                 key={chat._id}
-                className={`flex items-center gap-3 p-3 rounded-lg transition cursor-pointer
+                className={`flex items-center gap-3 px-3 py-4 rounded-lg transition cursor-pointer
                 ${activeChatId === chat._id ? "bg-muted" : "hover:bg-muted"}`}
                 onClick={() => {
                   router.push(`/chats/${chat._id}`);
@@ -88,7 +93,7 @@ const SideBar = () => {
                     <p className="font-medium text-[16px]">
                       {chat?.otherUser?.name}
                     </p>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
                       {chat?.lastMessageAt
                         ? new Date(chat.lastMessageAt).toLocaleTimeString([], {
                             hour: "2-digit",
@@ -97,12 +102,17 @@ const SideBar = () => {
                         : ""}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
                     {chat?.lastMessageText
                       ? chat?.lastMessageText.length > 30
                         ? chat.lastMessageText.slice(0, 30) + "..."
                         : chat.lastMessageText
                       : "Start the conversation"}
+                    {chat?.unreadMessagesCount > 0 && (
+                      <span className="ml-auto bg-blue-600 text-white text-xs font-medium px-2 py-0.5 rounded-full">
+                        {chat?.unreadMessagesCount}
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
