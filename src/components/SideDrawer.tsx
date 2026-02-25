@@ -24,12 +24,16 @@ const SideDrawer = ({ children }: { children: React.ReactNode }) => {
   );
 
   const getChat = async (id: Id<"users">) => {
-    const chatId = await createOrGetchat({
-      otherUserId: id
-    });
-
-    router.push(`/chats/${chatId}`);
-    setOpen(false);
+    try {
+      const chatId = await createOrGetchat({
+        otherUserId: id
+      });
+  
+      router.push(`/chats/${chatId}`);
+      setOpen(false);
+    } catch (error) {
+      console.error("Error creating or getting chat:", error);
+    }
   };
 
   return (

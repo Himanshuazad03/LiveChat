@@ -18,10 +18,15 @@ import {
 } from "@/components/ui/tooltip";
 import ChatSkeleton from "@/components/ChatSkeleton";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useConvexAuth } from "convex/react";
 
 const SideBar = () => {
-  const Allchats = useQuery(api.chats.getAllChats);
   const { user, isLoaded } = useUser();
+  const { isAuthenticated } = useConvexAuth();
+  const Allchats = useQuery(
+    api.chats.getAllChats,
+    isAuthenticated ? {} : "skip",
+  );
   const router = useRouter();
   const params = useParams();
   const activeChatId = params.chatId;

@@ -18,6 +18,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import {toast} from "sonner";
 
 type Props = {
   children: React.ReactNode;
@@ -29,6 +31,7 @@ export default function CreateGroupDialog({ children }: Props) {
   const [search, setSearch] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<Id<"users">[]>([]);
   const [groupImage, setGroupImage] = useState<string | undefined>();
+  const [loading, setLoading] = useState(false);
 
   const users = useQuery(api.users.getUsers, { search });
   const createGroupChat = useMutation(api.chats.createGroupChat);
@@ -52,24 +55,37 @@ export default function CreateGroupDialog({ children }: Props) {
   const removeUser = (userId: Id<"users">) => {
     setSelectedUsers((prev) => prev.filter((id) => id !== userId));
   };
-  console.log(selectedUsers);
 
   const handleCreate = async () => {
-    if (!groupName.trim() || selectedUsers.length === 0) return;
-
-    const groupId = await createGroupChat({
-      name: groupName,
-      userIds: selectedUsers,
-      image: groupImage,
-    });
-
-    setGroupName("");
-    setSelectedUsers([]);
-    setSearch("");
-    setOpen(false);
-    setGroupImage(undefined);
-
-    router.push(`/chats/${groupId}`);
+    try {
+      if (!groupName.trim() || selectedUsers.length === 0) return;
+      if(selectedUsers.length < 3) {
+        toast.error("Please select more than 2 users ");
+        return;
+      }
+  
+      setLoading(true);
+  
+      const groupId = await createGroupChat({
+        name: groupName,
+        userIds: selectedUsers,
+        image: groupImage,
+      });
+  
+      setLoading(false);
+      setGroupName("");
+      setSelectedUsers([]);
+      setSearch("");
+      setOpen(false);
+      setGroupImage(undefined);
+  
+      toast.success("Group chat created successfully");
+  
+      router.push(`/chats/${groupId}`);
+    } catch (error) {
+      toast.error("Failed to create group chat");
+      setLoading(false);
+    }
   };
 
   return (
@@ -179,9 +195,19 @@ export default function CreateGroupDialog({ children }: Props) {
         <DialogFooter className="mt-4">
           <Button
             onClick={handleCreate}
-            disabled={!groupName.trim() || selectedUsers.length === 0}
+            disabled={
+              loading || !groupName.trim() || selectedUsers.length === 0
+            }
+            className="min-w-30"
           >
-            Create Group
+            {loading ? (
+              <div className="flex items-center">
+                <Loader2 className="animate-spin h-4 w-4" />
+                <span className="ml-2">Creating...</span>
+              </div>
+            ) : (
+              "Create"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

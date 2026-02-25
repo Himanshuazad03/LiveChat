@@ -21,11 +21,13 @@ import { getDateLabel } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { Skeleton } from "@/components/ui/skeleton";
 import MessageSkeleton from "@/components/MessageSkeleton";
+import { useConvexAuth } from "convex/react";
 
 const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
   const [message, setMessage] = useState("");
 
   const { isLoaded } = useUser();
+  const { isAuthenticated } = useConvexAuth();
 
   const currentUser = useCurrentUser();
   const currentUserId = currentUser?._id;
@@ -64,10 +66,16 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
       setTyping({ chatId, isTyping: false });
     }, 3000);
   };
-  const getChat = useQuery(api.chats.getChat, { chatId: chatId });
+  const getChat = useQuery(
+    api.chats.getChat,
+    isAuthenticated ? { chatId: chatId } : "skip",
+  );
 
   const otherUser = getChat?.users?.find((user) => user?._id !== currentUserId);
-  const messages = useQuery(api.message.getMessages, { chatId: chatId });
+  const messages = useQuery(
+    api.message.getMessages,
+    isAuthenticated ? { chatId: chatId } : "skip",
+  );
 
   const scrollRef = useRef<HTMLDivElement>(null);
 

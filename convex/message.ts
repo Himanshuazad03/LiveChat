@@ -158,3 +158,29 @@ export const getTyping = query({
     return typingUsers.filter((t) => t.updatedAt > fiveSecondsAgo);
   },
 });
+
+export const deleteMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!currentUser) throw new Error("User not found");
+
+    const message = await ctx.db.get(args.messageId);
+    if (!message) throw new Error("Message not found");
+
+    if (message.senderId !== currentUser._id) {
+      throw new Error("You can only delete your own messages");
+    }
+
+    await ctx.db.delete(args.messageId);
+  },
+});
