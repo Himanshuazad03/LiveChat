@@ -14,6 +14,7 @@ export default defineSchema({
   chats: defineTable({
     name: v.string(),
     users: v.array(v.id("users")),
+    image: v.optional(v.string()),
     isGroupchat: v.boolean(),
     lastMessageAt: v.optional(v.number()),
     lastMessageText: v.optional(v.string()),
@@ -26,6 +27,15 @@ export default defineSchema({
     chatId: v.id("chats"),
     isRead: v.boolean(),
     createdAt: v.number(),
-  }).index("by_chatId", ["chatId"])
+  })
+    .index("by_chatId", ["chatId"])
     .index("by_senderId", ["senderId"]),
+
+  typing: defineTable({
+    chatId: v.id("chats"),
+    userId: v.id("users"),
+    updatedAt: v.number(),
+  })
+    .index("by_chatId", ["chatId"])
+    .index("by_user_chat", ["userId", "chatId"]),
 });

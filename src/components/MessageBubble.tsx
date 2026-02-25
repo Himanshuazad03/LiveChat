@@ -21,10 +21,12 @@ const MessageBubble = ({
   isOwn,
   message,
   isGroupChat,
+  time
 }: {
   isOwn: boolean;
   message: MessageWithSender;
   isGroupChat: boolean;
+  time: string;
 }) => {
   return (
     <div
@@ -52,10 +54,7 @@ const MessageBubble = ({
 
         <div className="flex items-center justify-between mt-1">
           <span className="text-[10px] text-muted-foreground">
-            {new Date(message.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {time}
           </span>
 
           {isOwn && (

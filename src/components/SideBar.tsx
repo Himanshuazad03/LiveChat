@@ -12,6 +12,7 @@ import SideDrawer from "@/components/SideDrawer";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
+import GroupChatDialog from "./GroupChatDialog";
 import {
   Tooltip,
   TooltipTrigger,
@@ -31,7 +32,7 @@ const SideBar = () => {
   const activeChatId = params.chatId;
 
   return (
-    <div className="w-sm bg-background border-r flex flex-col">
+    <div className="w-full bg-background border-r flex flex-col">
       <div className="p-3 flex items-center justify-between">
         <h1 className="font-semibold text-lg flex items-center gap-2">
           <Users size={20} />
@@ -51,10 +52,13 @@ const SideBar = () => {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-10 w-10">
-                <MessageSquarePlus className="h-5 w-5" />
-              </Button>
+              <GroupChatDialog>
+                <Button variant="ghost" size="icon" className="h-10 w-10">
+                  <MessageSquarePlus className="h-5 w-5" />
+                </Button>
+              </GroupChatDialog>
             </TooltipTrigger>
+
             <TooltipContent>New Group chat</TooltipContent>
           </Tooltip>
         </div>
@@ -82,16 +86,20 @@ const SideBar = () => {
                 }}
               >
                 <Avatar>
-                  <AvatarImage src={chat.otherUser?.image} />
+                  <AvatarImage
+                    src={chat.isGroupchat ? chat.image : chat.otherUser?.image}
+                  />
                   <AvatarFallback>
-                    {chat.otherUser?.name.slice(0, 1)}
+                    {chat?.isGroupchat
+                      ? chat?.name?.charAt(0)
+                      : chat?.otherUser?.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
-                    <p className="font-medium text-[16px]">
-                      {chat?.otherUser?.name}
+                    <p className="font-medium text-[16px] flex items-center gap-1">
+                      {chat?.isGroupchat ? chat.name : chat.otherUser?.name}
                     </p>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       {chat?.lastMessageAt

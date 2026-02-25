@@ -15,6 +15,9 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { formatTime } from "@/lib/utils";
+import DateDivider from "@/components/Divider";
+import { getDateLabel } from "@/lib/utils";
 
 const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
   const [message, setMessage] = useState("");
@@ -27,8 +30,13 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
   const markAsRead = useMutation(api.message.markMessagesAsRead);
   const sendMessage = useMutation(api.message.sendMessage);
 
+  const setTyping = useMutation(api.message.setTyping);
+  const typingUsers = useQuery(api.message.getTyping, { chatId });
+
   const handleSendMessage = async () => {
     if (!message.trim()) return;
+
+    setTyping({ chatId, isTyping: false });
 
     await sendMessage({
       chatId,
@@ -37,14 +45,26 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
 
     setMessage("");
   };
+
+  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const handleTyping = () => {
+    setTyping({ chatId, isTyping: true });
+
+    if (typingTimeout.current) {
+      clearTimeout(typingTimeout.current);
+    }
+
+    typingTimeout.current = setTimeout(() => {
+      setTyping({ chatId, isTyping: false });
+    }, 3000);
+  };
   const getChat = useQuery(api.chats.getChat, { chatId: chatId });
 
   const otherUser = getChat?.users?.find((user) => user?._id !== currentUserId);
   const messages = useQuery(api.message.getMessages, { chatId: chatId });
 
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const messageCount = messages?.length;
 
   useLayoutEffect(() => {
     if (!messages?.length) return;
@@ -72,39 +92,88 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <Avatar className="h-10 w-10">
-            <AvatarImage src={otherUser?.image} />
+            <AvatarImage
+              src={getChat?.isGroupchat ? getChat?.image : otherUser?.image}
+            />
             <AvatarFallback>{otherUser?.name.slice(0, 1)}</AvatarFallback>
           </Avatar>
 
           <div className="leading-tight">
-            <p className="font-semibold">{otherUser?.name}</p>
+            <p className="font-semibold">
+              {getChat?.isGroupchat ? getChat?.name : otherUser?.name}
+            </p>
           </div>
         </div>
-
-        <Button variant="ghost" size="icon">
-          <MoreVertical className="h-5 w-5" />
-        </Button>
       </div>
 
       <ScrollArea className="flex-1 px-6 overflow-y-auto">
-        <div className="space-y-6 m-2">
-          {messages?.map((message) => (
-            <MessageBubble
-              key={message._id}
-              isOwn={message.senderId === currentUserId}
-              message={message}
-              isGroupChat={getChat?.isGroupchat}
-            />
-          ))}
-        </div>
-        <div ref={scrollRef} />
+        {messages?.length === 0 ? (
+          <div className="min-h-full flex items-center justify-center mt-20">
+            <div className="flex flex-col items-center text-center px-6">
+              <div className="relative flex items-center justify-center">
+                <div className="absolute w-32 h-32 rounded-full bg-blue-500/5 blur-2xl" />
+
+                <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-blue-500/10">
+                  <Send className="h-8 w-8 text-blue-500" />
+                </div>
+              </div>
+
+              <h2 className="mt-6 text-lg font-medium">No messages here yet</h2>
+
+              <p className="mt-2 text-sm text-muted-foreground max-w-xs">
+                Send a message to start the conversation.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6 m-2">
+            {messages?.map((message, index) => {
+              const showDivider =
+                index === 0 ||
+                new Date(messages[index - 1].createdAt).toDateString() !==
+                  new Date(message.createdAt).toDateString();
+
+              return (
+                <React.Fragment key={message._id}>
+                  {showDivider && (
+                    <DateDivider label={getDateLabel(message.createdAt)} />
+                  )}
+
+                  <MessageBubble
+                    isOwn={message.senderId === currentUser?._id}
+                    message={message}
+                    isGroupChat={getChat?.isGroupchat}
+                    time={formatTime(message.createdAt)}
+                  />
+                </React.Fragment>
+              );
+            })}
+            <div ref={scrollRef} />
+          </div>
+        )}
       </ScrollArea>
+      <div>
+        {typingUsers &&
+          typingUsers?.some((t) => t.userId !== currentUserId) && (
+            <div className="flex items-center gap-1.5 px-6 py-1">
+              <span className="text-sm text-muted-foreground">Typing</span>
+              <div className="flex gap-1">
+                <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce" />
+                <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce delay-150" />
+                <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce delay-300" />
+              </div>
+            </div>
+          )}
+      </div>
 
       <div className="border-t bg-background p-2">
         <div className="flex items-center gap-3 bg-muted/60 rounded-xl px-4 py-2">
           <Input
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              handleTyping();
+            }}
             placeholder="Type a message..."
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {

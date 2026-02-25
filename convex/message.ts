@@ -1,7 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-
 export const sendMessage = mutation({
   args: {
     chatId: v.id("chats"),
@@ -49,7 +48,7 @@ export const getMessages = query({
       .first();
 
     if (!currentUser) throw new Error("User not found");
-    
+
     const messages = await ctx.db
       .query("messages")
       .withIndex("by_chatId", (q) => q.eq("chatId", args.chatId))
@@ -62,10 +61,10 @@ export const getMessages = query({
           .withIndex("by_id", (q) => q.eq("_id", message.senderId))
           .first();
         return { ...message, sender };
-      })
-    )
+      }),
+    );
 
-    return fullMessages
+    return fullMessages;
   },
 });
 
@@ -79,28 +78,83 @@ export const markMessagesAsRead = mutation({
 
     const currentUser = await ctx.db
       .query("users")
-      .withIndex("by_clerkId", q =>
-        q.eq("clerkId", identity.subject)
-      )
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .first();
 
     if (!currentUser) return;
 
     const unreadMessages = await ctx.db
       .query("messages")
-      .withIndex("by_chatId", q =>
-        q.eq("chatId", args.chatId)
-      )
-      .filter(q =>
+      .withIndex("by_chatId", (q) => q.eq("chatId", args.chatId))
+      .filter((q) =>
         q.and(
           q.neq(q.field("senderId"), currentUser._id),
-          q.eq(q.field("isRead"), false)
-        )
+          q.eq(q.field("isRead"), false),
+        ),
       )
       .collect();
 
     for (const msg of unreadMessages) {
       await ctx.db.patch(msg._id, { isRead: true });
     }
+  },
+});
+
+export const setTyping = mutation({
+  args: {
+    chatId: v.id("chats"),
+    isTyping: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!currentUser) throw new Error("User not found");
+
+    const existing = await ctx.db
+      .query("typing")
+      .withIndex("by_user_chat", (q) =>
+        q.eq("userId", currentUser._id).eq("chatId", args.chatId),
+      )
+      .unique();
+
+    if (args.isTyping) {
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          updatedAt: Date.now(),
+        });
+      } else {
+        await ctx.db.insert("typing", {
+          chatId: args.chatId,
+          userId: currentUser._id,
+          updatedAt: Date.now(),
+        });
+      }
+    } else {
+      if (existing) {
+        await ctx.db.delete(existing._id);
+      }
+    }
+  },
+});
+
+export const getTyping = query({
+  args: {
+    chatId: v.id("chats"),
+  },
+  handler: async (ctx, args) => {
+    const fiveSecondsAgo = Date.now() - 3000;
+
+    const typingUsers = await ctx.db
+      .query("typing")
+      .withIndex("by_chatId", (q) => q.eq("chatId", args.chatId))
+      .collect();
+
+    return typingUsers.filter((t) => t.updatedAt > fiveSecondsAgo);
   },
 });

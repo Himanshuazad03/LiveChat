@@ -73,6 +73,8 @@ export const getAllChats = query({
         
         return {
           _id: chat._id,
+          name: chat.name,
+          image: chat.image,
           createdAt: chat.createdAt,
           isGroupchat: chat.isGroupchat,
           lastMessageText: chat.lastMessageText,
@@ -102,5 +104,35 @@ export const getChat = query({
       ...chat,
       users,
     };
+  },
+});
+
+
+export const createGroupChat = mutation({
+  args: {
+    name: v.string(),
+    userIds: v.array(v.id("users")),
+    image: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) =>
+        q.eq("clerkId", identity.subject)
+      )
+      .first();
+
+    if (!currentUser) throw new Error("User not found");
+
+    return await ctx.db.insert("chats", {
+      name: args.name,
+      image: args.image,
+      users: [...args.userIds, currentUser._id],
+      isGroupchat: true,
+      createdAt: Date.now(),
+    });
   },
 });
