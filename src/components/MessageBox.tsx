@@ -23,11 +23,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import MessageSkeleton from "@/components/MessageSkeleton";
 import { useConvexAuth } from "convex/react";
 import GroupInfoDialog from "./GroupInfoDialog";
-import { Info } from "lucide-react"
-
+import { Info } from "lucide-react";
 
 const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
   const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   const { isLoaded } = useUser();
   const { isAuthenticated } = useConvexAuth();
@@ -43,17 +43,34 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
   const setTyping = useMutation(api.message.setTyping);
   const typingUsers = useQuery(api.message.getTyping, { chatId });
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
+  const handelSendMessage = async (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
 
-    setTyping({ chatId, isTyping: false });
+      if (!message.trim() || isSending) return;
 
-    await sendMessage({
-      chatId,
-      text: message,
-    });
+      try {
+        setIsSending(true);
+        await sendMessage({ chatId, text: message });
+        setMessage("");
+      } finally {
+        setIsSending(false);
+      }
+    }
+  };
 
-    setMessage("");
+  const handleSend = async () => {
+    if (!message.trim() || isSending) return;
+
+    try {
+      setIsSending(true);
+      await sendMessage({ chatId, text: message });
+      setMessage("");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -257,7 +274,7 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage();
+                handelSendMessage(e);
               }
             }}
             className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -266,7 +283,7 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
             size="sm"
             className="rounded-full h-9 w-9"
             onClick={() => {
-              handleSendMessage();
+              handleSend();
               setMessage("");
             }}
           >
