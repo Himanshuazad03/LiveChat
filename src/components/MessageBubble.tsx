@@ -38,7 +38,6 @@ const MessageBubble = ({
   isGroupChat: boolean;
   time: string;
 }) => {
-
   const deleteMessage = useMutation(api.message.deleteMessage);
   const handleDelete = () => {
     deleteMessage({ messageId: message._id });
@@ -59,7 +58,7 @@ const MessageBubble = ({
 
       <div className="flex flex-col max-w-xs">
         <div
-          className={`relative ${
+          className={`relative flex flex-col gap-1 ${
             isOwn
               ? "bg-primary text-primary-foreground"
               : "bg-slate-100 text-slate-900"
@@ -85,6 +84,11 @@ const MessageBubble = ({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            </div>
+          )}
+          {!isOwn && isGroupChat && (
+            <div className="text-xs text-muted-foreground">
+              {message.sender?.name}
             </div>
           )}
 
