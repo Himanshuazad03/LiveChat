@@ -79,7 +79,6 @@ const SideBar = () => {
             )}
 
             {Allchats?.map((chat) => {
-              console.log("Chat:", chat);
               const otherUser = chat.Users?.find(
                 (u) => u?._id !== currentUser?._id,
               );
