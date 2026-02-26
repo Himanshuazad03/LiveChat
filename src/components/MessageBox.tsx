@@ -22,6 +22,7 @@ import { useUser } from "@clerk/nextjs";
 import { Skeleton } from "@/components/ui/skeleton";
 import MessageSkeleton from "@/components/MessageSkeleton";
 import { useConvexAuth } from "convex/react";
+import { get } from "http";
 
 const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
   const [message, setMessage] = useState("");
@@ -70,6 +71,8 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
     api.chats.getChat,
     isAuthenticated ? { chatId: chatId } : "skip",
   );
+
+  const users = getChat?.users || [];
 
   const otherUser = getChat?.users?.find((user) => user?._id !== currentUserId);
   const messages = useQuery(
@@ -120,7 +123,7 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
               <Skeleton className="h-4 w-50" />
             </div>
           ) : (
-            <div className="leading-tight">
+            <div className="leading-tight flex flex-col gap-2">
               <p className="font-semibold">
                 {getChat?.isGroupchat ? getChat?.name : otherUser?.name}
               </p>
@@ -185,13 +188,29 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
                 {getChat?.isGroupchat
                   ? typingUsers &&
                     typingUsers.length > 0 && (
-                      <span>
-                        {typingUsers.length === 1
-                          ? `${typingUsers[0].name} is typing`
-                          : `${typingUsers.map((u) => u.name).join(", ")} are typing...`}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-2">
+                          {typingUsers.map((user) => (
+                            <Avatar
+                              key={user.userId}
+                              className="h-6 w-6 border"
+                            >
+                              <AvatarImage src={user.image} alt={user.name} />
+                              <AvatarFallback>
+                                {user.name?.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
+
+                        <span>
+                          {typingUsers.length === 1
+                            ? "is typing..."
+                            : "are typing..."}
+                        </span>
+                      </div>
                     )
-                  : "typing"}
+                  : "typing..."}
               </span>
               <div className="flex gap-1">
                 <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce" />

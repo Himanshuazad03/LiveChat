@@ -79,7 +79,8 @@ const SideBar = () => {
             )}
 
             {Allchats?.map((chat) => {
-              const otherUser = chat.otherUsers?.find(
+              console.log("Chat:", chat);
+              const otherUser = chat.Users?.find(
                 (u) => u?._id !== currentUser?._id,
               );
 
@@ -109,9 +110,9 @@ const SideBar = () => {
                     <div className="flex justify-between items-center">
                       <p className="font-medium text-[16px] flex gap-2">
                         {displayName}
-                        {chat.isGroupchat && chat.otherUsers.length > 0 && (
+                        {chat.isGroupchat && chat.Users.length > 0 && (
                           <span className=" bg-slate-600 text-white text-xs font-medium px-2 py-1 rounded-full">
-                            {chat.otherUsers.length} members
+                            {chat.Users.length} members
                           </span>
                         )}
                       </p>

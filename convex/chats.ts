@@ -56,10 +56,9 @@ export const getAllChats = query({
 
     const chatsWithUsers = await Promise.all(
       filtered.map(async (chat) => {
-        const otherUserIds = chat.users.filter((id) => id !== currentUser._id);
 
-        const otherUsers = await Promise.all(
-          otherUserIds.map((id) => ctx.db.get(id)),
+        const Users = await Promise.all(
+          chat.users.map((id) => ctx.db.get(id)),
         );
         const unreadMessages = await ctx.db
           .query("messages")
@@ -81,7 +80,7 @@ export const getAllChats = query({
           lastMessageText: chat.lastMessageText,
           lastMessageAt: chat.lastMessageAt,
           unreadMessagesCount: unreadMessages.length,
-          otherUsers,
+          Users,
         };
       }),
     );

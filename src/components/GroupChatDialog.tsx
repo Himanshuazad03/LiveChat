@@ -59,8 +59,8 @@ export default function CreateGroupDialog({ children }: Props) {
   const handleCreate = async () => {
     try {
       if (!groupName.trim() || selectedUsers.length === 0) return;
-      if(selectedUsers.length < 3) {
-        toast.error("Please select more than 2 users ");
+      if(selectedUsers.length < 2) {
+        toast.error("Please select more than 1 users ");
         return;
       }
   
