@@ -282,10 +282,7 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
           <Button
             size="sm"
             className="rounded-full h-9 w-9"
-            onClick={() => {
-              handleSend();
-              setMessage("");
-            }}
+            onClick={handleSend}
           >
             <Send className="h-4 w-4" />
           </Button>
