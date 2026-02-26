@@ -142,11 +142,11 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
               <Skeleton className="h-4 w-50" />
             </div>
           ) : (
-            <div className="leading-tight flex flex-col gap-2">
+            <div className="leading-tight flex flex-col gap-1">
               <p className="font-semibold">
                 {getChat?.isGroupchat ? getChat?.name : otherUser?.name}
               </p>
-              <span>
+              <span className="hidden lg:block">
                 {getChat?.isGroupchat && (
                   <div className="text-sm text-muted-foreground">
                     {users && (
@@ -177,7 +177,7 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
         {!isLoaded || !messages ? (
           <MessageSkeleton />
         ) : messages?.length === 0 ? (
-          <div className="min-h-full flex items-center justify-center mt-20">
+          <div className="min-h-full flex items-center justify-center mt-50">
             <div className="flex flex-col items-center text-center px-6">
               <div className="relative flex items-center justify-center">
                 <div className="absolute w-32 h-32 rounded-full bg-blue-500/5 blur-2xl" />

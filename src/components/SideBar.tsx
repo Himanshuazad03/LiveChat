@@ -33,7 +33,7 @@ const SideBar = () => {
   const currentUser = useCurrentUser();
 
   return (
-    <div className="w-full bg-background border-r flex flex-col">
+    <div className="w-full md:w-sm lg:w-sm bg-background border-r flex flex-col">
       <div className="p-3 flex items-center justify-between">
         <h1 className="font-semibold text-lg flex items-center gap-2">
           <Users size={20} />

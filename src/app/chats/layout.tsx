@@ -16,7 +16,7 @@ export default function ChatsLayout({
       <div
         className={`
           ${chatId ? "hidden md:flex" : "flex"}
-          w-full md:w-sm border-r bg-background
+          w-full md:w-sm lg:w-sm border-r bg-background
         `}
       >
         <SideBar />
