@@ -22,7 +22,9 @@ import { useUser } from "@clerk/nextjs";
 import { Skeleton } from "@/components/ui/skeleton";
 import MessageSkeleton from "@/components/MessageSkeleton";
 import { useConvexAuth } from "convex/react";
-import { get } from "http";
+import GroupInfoDialog from "./GroupInfoDialog";
+import { Info } from "lucide-react"
+
 
 const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
   const [message, setMessage] = useState("");
@@ -127,9 +129,31 @@ const MessageBox = ({ chatId }: { chatId: Id<"chats"> }) => {
               <p className="font-semibold">
                 {getChat?.isGroupchat ? getChat?.name : otherUser?.name}
               </p>
+              <span>
+                {getChat?.isGroupchat && (
+                  <div className="text-sm text-muted-foreground">
+                    {users && (
+                      <>
+                        {users
+                          .slice(0, 7)
+                          .map((u) => u?.name)
+                          .join(", ")}
+                        {users.length > 7 && " ..."}
+                      </>
+                    )}
+                  </div>
+                )}
+              </span>
             </div>
           )}
         </div>
+        {getChat?.isGroupchat && (
+          <GroupInfoDialog group={getChat}>
+            <Button variant="ghost" size="icon">
+              <Info className="h-5 w-5" />
+            </Button>
+          </GroupInfoDialog>
+        )}
       </div>
 
       <ScrollArea className="flex-1 px-6 overflow-y-auto">

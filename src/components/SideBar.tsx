@@ -67,7 +67,7 @@ const SideBar = () => {
 
       <Separator />
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 overflow-y-auto">
         {!isLoaded || !Allchats ? (
           <ChatSkeleton />
         ) : (
